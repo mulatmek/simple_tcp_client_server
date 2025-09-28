@@ -1,12 +1,6 @@
 import socket
 import threading
-
-#constans
-HEADER = 64
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT)
-FORMAT =  'utf-8'
+from config import *
 
 #binding
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,15 +12,23 @@ def handle_client(conn, addr):
     connected = True
     while connected:
         msg_length = conn.recv(HEADER).decode(FORMAT)
-        msg_length = int(msg_length)
-        msg = conn.recv(msg_length).decode(FORMAT)
-        print(msg)
+        if msg_length:
+            print(msg_length)
+            msg_length = int(msg_length)
+            msg = conn.recv(msg_length).decode(FORMAT)
+            if msg == DISCONNECT_MSG:
+                connected = False
+
+            print(F"[SERVER] {addr} {msg}")
+
+    conn.close()
 
 
 
 
 def start():
     server.listen()
+    print(f"[SERVER] server start listening on {SERVER}")
     while True:
         conn, addr = server.accept()
         t = threading.Thread(target=handle_client, args=(conn, addr))
